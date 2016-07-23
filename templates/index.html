@@ -1,9 +1,19 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>Flask-SocketIO Test</title>
-    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
+    <title>Sync Player</title>
+    <style type="text/css">
+        video::-webkit-media-controls-fullscreen-button {}
+        video::-webkit-media-controls-play-button { display: none; }
+        video::-webkit-media-controls-timeline {}
+        video::-webkit-media-controls-current-time-display{}
+        video::-webkit-media-controls-time-remaining-display {}
+        video::-webkit-media-controls-mute-button {}
+        video::-webkit-media-controls-toggle-closed-captions-button {}
+        video::-webkit-media-controls-volume-slider {}
+    </style>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js"></script>
     <script type="text/javascript" charset="utf-8">
         $(document).ready(function() {
             // Use a "/test" namespace.
@@ -31,7 +41,7 @@
             // section of the page.
             socket.on('my response', function(msg) {
                 $('#log').append('<br>' + $('<div/>').text(msg.name + ': ' + msg.data).html());
-            });            
+            });
 
             // Handlers for the different forms in the page.
             // These accept data from the user and send it to the server in a
@@ -45,48 +55,54 @@
                 socket.emit('my broadcast event', {data: $('#broadcast_data').val(),name:name});
                 return false;
             });            
-            
+
+            var video = $('video')[0];
             $('#videoInput').change(function () {
                 if (this.files.length < 1)
                     return;
                 var url = URL.createObjectURL(this.files[0]);
-                $('video').attr('src', url);
+                video.src = url;
             });
-
             $('#subtitleInput').change(function () {
                 if (this.files.length < 1)
                     return;
-                $('track').remove();
                 var url = URL.createObjectURL(this.files[0]);
-                $('<track kind="subtitles">').attr('src', url).appendTo($('video'));
-                $('video')[0].textTracks[0].mode = 'showing';
+                $('track').remove();
+                $('<track kind="subtitles">').attr('src', url).appendTo(video);
+                video.textTracks[0].mode = 'showing';
             });
-            $('video')[0].onpause=function(e){
-                console.log("Video paused. Current time of videoplay: " + e.target.currentTime );
-                socket.emit('video control',{data:'pause'})
-            }
-            $('video')[0].onplay=function(e){
-                console.log("Video start playing. Current time of videoplay: " + e.target.currentTime );
-                socket.emit('video control',{data:'play',name:name})
-            }
+            $('.btn-play').click(function () {
+                socket.emit('video control', {actiontype: 'play', progress: video.currentTime});
+            });
+            $('.btn-pause').click(function () {
+                socket.emit('video control', {actiontype: 'pause', progress: video.currentTime});
+            });
             socket.on('video control',function(d){
-                if (d.data == "pause")
-                    $('video')[0].pause()
-                if (d.data == "play")
-                    $('video')[0].play()
-            })
+                var actions = function() {
+                    video.pause();
+                    video.currentTime = d.progress;
+                    video[d.actiontype]();
+                };
+                if (d.ontime) {
+                    var delay = new Date(d.ontime) - Date.now();
+                    if (delay > 0) {
+                        setTimeout(actions, delay);
+                    }
+                } else {
+                    actions();
+                }
+            });
         });
     </script>
-    <script type="text/javascript">
-    $(document).ready(function () {
-
-
-    });
-    </script>
-
 </head>
 <body>
-    <video controls></video>
+    <div>
+        <video controls></video>
+        <div class="video-controls">
+            <button class="btn-play">Play all</button>
+            <button class="btn-pause">Pause all</button>
+        </div>
+    </div>
     <div>
         <p>Choose movie: <input id="videoInput" type="file" accept="video/*"></p>
         <p>Choose subtitle: <input id="subtitleInput" type="file" accept=".vtt"></p>
