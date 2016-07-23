@@ -17,6 +17,10 @@ def test_message(message):
 def test_message(message):
     emit('my response', {'data': message['data']}, broadcast=True)
 
+@socketio.on('video control', namespace='/test')
+def test_message(message):
+    emit('video control', {'data': message['data']}, broadcast=True)
+
 @socketio.on('connect', namespace='/test')
 def test_connect():
     emit('my response', {'data': 'Connected'})
