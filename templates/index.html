@@ -17,7 +17,7 @@
             // The connection URL has the following format:
             //     http[s]://<domain>:<port>[/<namespace>]
             var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
-
+            var name = "Guest"
             // Event handler for new connections.
             // The callback function is invoked when a connection with the
             // server is established.
@@ -30,25 +30,22 @@
             // to the client. The data is then displayed in the "Received"
             // section of the page.
             socket.on('my response', function(msg) {
-                $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+                $('#log').append('<br>' + $('<div/>').text(msg.name + ': ' + msg.data).html());
             });            
 
             // Handlers for the different forms in the page.
             // These accept data from the user and send it to the server in a
             // variety of ways
             $('form#emit').submit(function(event) {
-                socket.emit('my event', {data: $('#emit_data').val()});
+                socket.emit('my event', {data: "Set name: "+$('#emit_data').val()});
+                name = $('#emit_data').val()
                 return false;
             });
             $('form#broadcast').submit(function(event) {
-                socket.emit('my broadcast event', {data: $('#broadcast_data').val()});
+                socket.emit('my broadcast event', {data: $('#broadcast_data').val(),name:name});
                 return false;
             });            
-            $('form#disconnect').submit(function(event) {
-                socket.emit('disconnect request');
-                return false;
-            });
-
+            
             $('#videoInput').change(function () {
                 if (this.files.length < 1)
                     return;
@@ -70,7 +67,7 @@
             }
             $('video')[0].onplay=function(e){
                 console.log("Video start playing. Current time of videoplay: " + e.target.currentTime );
-                socket.emit('video control',{data:'play'})
+                socket.emit('video control',{data:'play',name:name})
             }
             socket.on('video control',function(d){
                 if (d.data == "pause")
@@ -96,14 +93,11 @@
     </div>
     <form id="emit" method="POST" action='#'>
         <input type="text" name="emit_data" id="emit_data" placeholder="Your name">
-        <input type="submit" value="Connect">
+        <input type="submit" value="Set">
     </form>
     <form id="broadcast" method="POST" action='#'>
         <input type="text" name="broadcast_data" id="broadcast_data" placeholder="Message">
         <input type="submit" value="Broadcast">
-    </form>
-    <form id="disconnect" method="POST" action="#">
-        <input type="submit" value="Disconnect">
     </form>
     <h2>Chat room:</h2>
     <div id="log"></div>
