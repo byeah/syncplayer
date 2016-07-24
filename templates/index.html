@@ -3,6 +3,11 @@
 <head>
     <title>Sync Player</title>
     <style type="text/css">
+        video::cue {
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0);
+            font-family: "Arial","Microsoft YaHei","黑体",sans-serif,"宋体";
+        }
         video::-webkit-media-controls-fullscreen-button {}
         video::-webkit-media-controls-play-button { display: none; }
         video::-webkit-media-controls-timeline {}
@@ -87,6 +92,8 @@
                     var delay = new Date(d.ontime) - Date.now();
                     if (delay > 0) {
                         setTimeout(actions, delay);
+                    } else {
+                        actions();
                     }
                 } else {
                     actions();
