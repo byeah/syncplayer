@@ -15,7 +15,10 @@ def index():
 
 @socketio.on('my event', namespace='/test')
 def test_message(message):
-    emit('my response', {'name':'Server','data': message['data']})
+    params = {'name':'Server','data': message['data']}
+    if message.get('initTime'):
+        params['serverTime'] = int((datetime.utcnow() - epoch).total_seconds() * 1000)
+    emit('my response', params)
 
 @socketio.on('my broadcast event', namespace='/test')
 def test_message(message):

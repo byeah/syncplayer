@@ -36,8 +36,10 @@
             // Event handler for new connections.
             // The callback function is invoked when a connection with the
             // server is established.
+            var initTime;
             socket.on('connect', function() {
-                socket.emit('my event', {data: 'I\'m connected!'});
+                initTime = Date.now();
+                socket.emit('my event', {data: 'I\'m connected!', initTime: initTime});
             });
 
             // Event handler for server sent data.
@@ -45,6 +47,14 @@
             // to the client. The data is then displayed in the "Received"
             // section of the page.
             socket.on('my response', function(msg) {
+                if (msg.serverTime) {
+                    var currentTime = Date.now();
+                    console.log((msg.serverTime - initTime) + ' ' + (currentTime - msg.serverTime));
+                    if (!(initTime < msg.serverTime && msg.serverTime < currentTime)) {
+                        alert('Your system time is out of sync with the Internet!\nPlease sync your system time first.');
+                        window.close();
+                    }
+                }
                 $('#log').append('<br>' + $('<div/>').text(msg.name + ': ' + msg.data).html());
             });
 
@@ -90,11 +100,12 @@
                 };
                 if (d.ontime) {
                     var delay = new Date(d.ontime) - Date.now();
+                    console.log(delay);
                     if (delay > 0) {
                         setTimeout(actions, delay);
                     } else {
+                        alert('Your system time is out of sync with the Internet!');
                         actions();
-                        alert('Your system time is out of sync with others!');
                     }
                 } else {
                     actions();
@@ -112,7 +123,7 @@
         </div>
     </div>
     <div>
-        <p>Choose movie: <input id="videoInput" type="file" accept="video/*"></p>
+        <p>Choose movie: <input id="videoInput" type="file" accept="video/*,.mp4"></p>
         <p>Choose subtitle: <input id="subtitleInput" type="file" accept=".vtt"></p>
     </div>
     <form id="emit" method="POST" action='#'>
