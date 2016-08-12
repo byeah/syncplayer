@@ -51,8 +51,8 @@
                     var currentTime = Date.now(),
                         delay1 = msg.serverTime - initTime,
                         delay2 = currentTime - msg.serverTime;
-                    console.log(delay1 + ' ' + delay12);
-                    if (delay1 < -100 || delay2 < -100) {
+                    console.log(delay1 + ' ' + delay2);
+                    if (delay1 < -500 || delay2 < -500) {
                         alert('Your system time is out of sync with the Internet!\nPlease sync your system time first.');
                         window.close();
                     }
