@@ -7,7 +7,7 @@ app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 
 epoch = datetime.utcfromtimestamp(0)
-delay = 3000    # milliseconds
+delay = 2000    # milliseconds
 
 @app.route('/')
 def index():
@@ -32,4 +32,4 @@ def test_message(message):
     emit('video control', params, broadcast=True)
 
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app, host='0.0.0.0', port=8000)
